@@ -6,3 +6,5 @@ bin/
 *.rel*
 *.o
 *.elf
+*.iso
+*.wbfs
