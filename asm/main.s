@@ -35,7 +35,7 @@ main:
 	/* actual code now */
 	/* Settings */
 	li   %r31, 10      /* number of coins per death penalty */
-	li   %r30, 50      /* target coin count */
+	li   %r30, 0      /* target coin count */
 	/* Scoring:
 	 * find maximum lives
 	 * calculate total coins for each player = base + bonus + 10*star
