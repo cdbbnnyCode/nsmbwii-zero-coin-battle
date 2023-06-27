@@ -1,0 +1,30 @@
+Header:
+0x00  | byte   | endian mode (0x11 for wii files)
+0x01  | uint24 | decompressed file size
+0x04  | end
+
+Data:
+stream of blocks immediately after the header
+each chunk is 1 byte flags followed by 8 data chunks
+
+flags determine which chunks are back-references to previous data
+- read from the most significant bit
+- if the bit is 1, that chunk is a back-reference
+- if it is 0, that chunk is a raw byte
+
+back-reference chunks are variable width depending on the length of the copy
+the top 4 bits of the first byte choose the mode:
+
+x >= 2:  small reference
+  - x is the length (more precisely, length = x + 1, allowing for 3-16 bytes)
+  - next 12 bits are the distance to go back from the current write pointer in the decoded data
+
+x == 0:  medium reference
+  - next 8 bits (y) are the length (length = y + 17, allowing 17-272 bytes)
+  - next 12 bits are the distance
+
+x == 1:  long reference
+  - next 16 bits (z) are the length (length = z + 273, allowing 273-65808 bytes)
+  - next 12 bits are the distance
+
+

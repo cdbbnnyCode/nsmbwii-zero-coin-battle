@@ -1,0 +1,127 @@
+-- these are random notes from developing this project; some of these might be useful for other NSMBW hacks --
+
+Addresses:
+* 81544b98
+  - display data (overwritten constantly)
+
+* 80354e10
+  - actual data
+10  u32 unknown[4]           = {0xa7, 0xa8, 0, 0}
+     bits 2-0 index into an array of linked lists
+     appears to be a key into a table
+20  u32 unknown2[4]          = {0, 0, 0, 0}
+30  s32 character_indices[4] = {0, 1, -1, -1}
+40  u32 unknown3[4]          = {0, 0, 0, 0}
+50  u32 present[4]           = {1, 1, 0, 0}
+60  u32 char_indices2[4]     = {0, 1, 2, 3}
+70  u32 unknown4[4]          = {0, 0, 0, 0}
+80  u32 unknown5[4]          = {0, 0, 0, 0}
+90  u32 player_lives[4]      = {100, 0, 5, 5}
+a0  u32 player_coins[4]      = {80, 0, 0, 0}
+b0  u32 player_countdowns[4] = {0, 0, 0, 0}
+c0  u32 player_cd_flags[4]   = {0, 0, 0, 0}
+
+* 80354ee0 = struct
+    [0x04] u32 type = 1
+    [0x08] u32 subtype = 0
+    [0x0c] u32 count1 = 0
+    [0x54] u32 count2 = 0
+
+80918854 -> li r0, 5 (when coin battle mode entered, probably for character selection)
+800e18dc -> lives = result of 800ce0b0()
+reads from some data that gets copied everywhere
+initialized by the number at 800cdf6c -> li r5, 5
+
+(u16) r3 + 0x6be = 1
+
+* 81535a44 = star coin flag?
+
+80060200
+
+81544808 = some object?
++ 453 = 81544c5b => 0x00
++ 3dc = 81544be4
++ 4e4 = 81544cec => 8161ba04
+  -> 8034f930
+  -> 0
+
+
+8042f680 = some other object?
+
+-> 800D0B20
+  in ptr 0x815e453c (heap allocated?)
+    struct
+    [0x18] u8 bitfield
+      this function enables/disables bit 2
+
+r0 = 0x4b >> 5 = 2
+cr = MSB(0x4b) & (0xb != 0)
+r6 = 0x4b << 27 = 0x58000000
+r5 = 0x4b >> 31 = 0 (sign bit of r4)
+r7 = 1
+r0 = r0 + cr
+r4 = r6 - r5
+r0 = r0 << 4
+r4 = r4 >> 27
+
+
+r0 = ((x >> 5) + cr) << 2
+(x >> 5) + cr ==> x / 32 rounding towards zero
+
+r4 = ((x << 27) - (x < 0)) >> 27
+x % 32 - (x < 0)
+
+r3 = r3 + r0
+r4 = r4 + r5
+
+r0 = *(r3 + 0x1014) = 0
+r3 = (1 << r4) & r0
+return (-r3 | r3) < 0
+       r3 != 0
+
+flag65 = 1
+flag66 = 0
+
+80341580	
+
+8042a418 = some global variable (thread info)
+  = 80c7f460 = current thread
+
+8016bfe8
+
+815e36fc - results screen object
+815e3ec0 - coin info
+ - read from 
+
+target instruction
+807a53e8 -> li r29, 1
+
+base REL address in memory = 0x8076d680
+- results data patch section @ 0x8098ff38
+
+patch the prolog to update data in main.dol without actually changing main.dol
+target instruction
+8076d778 -> lis r3, 0x8093   (offset 0xf8 in the rel)
+
+need to patch the REL module
+
+* add new sections for .text and .data of our patch (can be the same) 
+* no relocs
+* we can patch the rel file directly and then we don't have to worry about adding a runtime patcher script
+* need to make sure that *everything* is saved, the stack isn't damaged, and r29 is updated to 1
+
+functionality:
+- register table
+-    r0 = temp
+-    r4 = temp 2
+-    r5 = temp 3
+-   r31 = player ID counter
+-   r30 = results data address
+-   r29 = maximum total coins
+
+- load results data address from 0x80429fb0
+- for each player [r31]:
+  - get base coins (r30 + 0x28 + r31*4) -> r0
+  - get bonus coins (r30 + 0x48 + r31*4) -> r4
+  - total coins = r0 + r4 -> r0
+  - 

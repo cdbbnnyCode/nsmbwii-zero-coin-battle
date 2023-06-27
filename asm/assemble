@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 <asm file>"
+  exit 1
+fi
+
+name="${1%.*}"
+
+powerpc-eabi-as -mbroadway -a "$1" -o "${name}.o"
+powerpc-eabi-ld -T ldscript.ld "${name}.o" -o "${name}.elf"
+powerpc-eabi-objcopy --dump-section .text="${name}.bin" "${name}.elf"
+powerpc-eabi-readelf --syms "${name}.elf" >"${name}.syms"
