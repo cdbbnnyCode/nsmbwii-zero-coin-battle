@@ -101,7 +101,7 @@ def main():
 
     patch_spec = {
         "rel": "d_basesNP.rel.orig",
-        "output": "game/data/files/d_basesNP.rel",
+        "output": out_file,
         "sections": [
             {
                 # define the section for our patch data
@@ -115,11 +115,19 @@ def main():
         "patches": [
             # patches into the REL file itself
             {
-                # patch the results data calculation
+                # patch the penalty calculation
                 "type": "branch_section",
                 "section": 1,
                 "addr": 0x37d68,  # where to put the branch
-                "target": "main", # function to jump to
+                "target": "calc_penalties", # function to jump to
+                "target_section": "main"
+            },
+            {
+                # override the sort data
+                "type": "branch_section",
+                "section": 1,
+                "addr": 0x386a0,  # where to put the branch
+                "target": "modify_ranking_coins", # function to jump to
                 "target_section": "main"
             },
             {

@@ -125,3 +125,27 @@ functionality:
   - get bonus coins (r30 + 0x48 + r31*4) -> r4
   - total coins = r0 + r4 -> r0
   - 
+
+80d25440 : uint32_t[4] wins - this seems to be updated by the crown effect?
+
+ResultsScreenData + 0x7dc: structure of player cards
+
+807a53a0 (initPlayerCards) sets up these cards
+807a6680 (doWinCount) counts winners (need to change)
+807a4c90 (playerCardSort) sorts the cards
+807a47a0 (playerSortIter) decides the winner
+807a5d00 (doPlayerSort) is the actual game loop function
+-> calls 807a4be0 (shouldSwapCards) to decide if things need to be rearranged
+-> patch the branch to shouldSwapCards @ 807a5d20
+   -> branch to the recalculation function
+   -> recalculation function uses total coins and applies the max - |value - target| rule
+   -> jumps back to shouldSwapCards (with a bctr because my linker doesn't know where anything is)
+
+-> patch initPlayerCards @ 807a549c (mr r3, r31)
+   -> calculate death penalties and add them to the bonus coins
+   -> results screen pointer is in r31
+      - cards array at 0x7b8 offset
+   -> player indices pointer in r28
+      - subtract 0x10 to get player present pointer
+
+
